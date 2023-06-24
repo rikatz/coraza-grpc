@@ -1,0 +1,73 @@
+// Copyright 2023 The Kubernetes Authors.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+option go_package = "github.com/rikatz/apis/nginx";
+
+package filter;
+
+// Defines the Filter Service
+service NginxFilter {
+  // HandleRequest defines a remote call that will receive the HTTP request 
+  // and return the decision before NGINX can pass it to the next filter or 
+  // to the backends
+  rpc HandleRequest(HttpFilter) returns (Decision) {}
+
+  // HandleResponse defines a remote call that will receive the HTTP response 
+  // already parsed/sent back by some Backend, and return a decision
+  rpc HandleResponse(HttpFilter) returns (Decision) {}
+}
+
+// Decision defines a decision taken by the filter and an additional message to 
+// be sent to NGINX.
+// The fields below are highly inspired on mod_security/coraza interruption fields
+// https://github.com/corazawaf/coraza/blob/82157f85f24c6107667bf0f686b71a72aafdf8a5/types/waf.go#L165
+message Decision {
+  // Action can be allow (0), deny (1) or redirect (2)
+  int32 action = 1;
+  // Message defines an arbitrary message justifying the decision
+  string message = 2;
+  // DecisionID defines an identifier of a rule that took the decision. Can be empty
+  int32 decisionid = 3;
+  // Status can be used if the filter wants to force on its decision
+  int32 statuscode = 4;
+  // TODO: Define additional data?
+}
+
+message HttpFilter {
+  // ID defines the request ID. This information can be used later to check with a subsequent response
+  int32 id = 1;
+  string version = 2;
+  map<string, string> headers = 3;
+  bytes body = 4;
+  oneof payload {
+    Request request = 10;
+    Response response = 11;
+  }
+
+}
+
+message Request {  
+  string srcip = 2;
+  int32 srcport = 3;
+  string dstip = 4;
+  int32 dstport = 5;
+  string method = 6;
+  string path = 7;
+  string query = 8;  
+}
+
+message Response {  
+  int32 statuscode = 1;  
+}
