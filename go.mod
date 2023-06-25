@@ -4,7 +4,6 @@ go 1.20
 
 require (
 	github.com/corazawaf/coraza/v3 v3.0.0
-	github.com/davecgh/go-spew v1.1.1
 	github.com/magefile/mage v1.15.0
 	go.uber.org/zap v1.24.0
 	google.golang.org/grpc v1.56.1

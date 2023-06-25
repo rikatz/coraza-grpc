@@ -12,6 +12,18 @@ Coraza decision points.
 The Nginx Rust module will be developed simply to consume this program via gRPC and take decisions based on 
 the return of this module
 
+## Quickstart
+We use [mage](https://magefile.org/) to build, please make sure it is installed
+
+* Get the coraza configs and rules with `mage generate:wafConfig`
+* Change the line `SecRuleEngine` on `config/coraza.conf` to `SecRuleEngine On`
+* Build the binaries with `mage build`
+* Run the server on `build/coraza-grpc`. It will listen on port 10000
+* Run the test client on `build/coraza-client`. It should make three requests:
+  * The first request will not be parsed as it contains invalid gRPC operation
+  * The second request will be denied as it contains an attempt of transversal path + TRACE method
+  * The third request will be accepted
+
 ## What's the idea
 
 ```mermaid

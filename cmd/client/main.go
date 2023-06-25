@@ -5,7 +5,6 @@ import (
 	"flag"
 	"log"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/rikatz/coraza-grpc/apis/nginx"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -64,7 +63,8 @@ func runWAFTest(conn *grpc.ClientConn) {
 	if err != nil {
 		log.Printf("got error: %s", err)
 	}
-	spew.Dump(decision)
+
+	log.Printf("decision %d return code %d by rule %d with message '%s'", decision.GetAction(), decision.GetStatuscode(), decision.GetDecisionid(), decision.GetMessage())
 
 	requestOK := nginx.FilterRequest{
 		Id:      "bloblo123",
@@ -90,6 +90,5 @@ func runWAFTest(conn *grpc.ClientConn) {
 	if err != nil {
 		log.Printf("got error: %s", err)
 	}
-	spew.Dump(decision)
-
+	log.Printf("decision %d return code %d by rule %d with message '%s'", decision.GetAction(), decision.GetStatuscode(), decision.GetDecisionid(), decision.GetMessage())
 }

@@ -18,16 +18,16 @@ func (Go) Test() error {
 
 // Build builds the program
 func (Go) Build() {
-	mg.Deps(Go{}.BuildServer, Go{}.BuildClient)
+	mg.Deps(Go{}.Server, Go{}.Client)
 }
 
-func (Go) BuildClient() error {
+func (Go) Client() error {
 	mg.Deps(Go{}.Tidy)
 	fmt.Println("Building client")
 	return sh.RunV("go", "build", "-o", "build/coraza-client", "cmd/client/main.go")
 }
 
-func (Go) BuildServer() error {
+func (Go) Server() error {
 	mg.Deps(Go{}.Tidy)
 	fmt.Println("Building server")
 	return sh.RunV("go", "build", "-o", "build/coraza-grpc", "cmd/server/main.go")
