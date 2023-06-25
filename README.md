@@ -17,14 +17,14 @@ the return of this module
 
 ```mermaid
 flowchart LR
-  NGINX["`NGINX
-  C++`"]
+  NGINX["NGINX
+  C++"]
 
-  mod["`mod_authz_grpc
-  ngx-rust`"]
+  mod["mod_authz_grpc
+  ngx-rust"]
 
-  bck["`gRPC Backend
-  Any Language`"]
+  bck["gRPC Backend
+  Any Language"]
 
   NGINX --> mod --> bck
 ```
