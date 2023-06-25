@@ -25,6 +25,17 @@ func (Generate) Protobuf() error {
 	return sh.RunV("protoc", args...)
 }
 
+func (Generate) WAFConfig() error {
+	if err := sh.RunV("wget", CorazaConfig, "-O", "config/coraza.conf"); err != nil {
+		return err
+	}
+
+	if err := sh.RunV("git", "clone", CoreRuleSetRepo, "config/coreruleset"); err != nil {
+		return err
+	}
+	return nil
+
+}
 func validateProtocExecutable() error {
 	if err := sh.Run("which", "protoc"); err != nil {
 		return fmt.Errorf("no protoc was found. Please check https://grpc.io/docs/protoc-installation/")

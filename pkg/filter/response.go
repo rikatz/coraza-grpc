@@ -17,7 +17,7 @@ func (s *GRPCHandler) handleResponse(ctx context.Context, id string, version str
 	}
 
 	if interruption := tx.ProcessResponseHeaders(int(response.Statuscode), "HTTP/"+version); interruption != nil {
-		return s.processInterruption(it, hit), nil
+		return s.generateResponse(interruption), nil
 	}
 
 	if len(body) > 0 {
@@ -26,17 +26,18 @@ func (s *GRPCHandler) handleResponse(ctx context.Context, id string, version str
 			return nil, err
 		}
 		if interruption != nil {
-			return s.processInterruption(interruption)
+			return s.generateResponse(interruption), nil
 		}
 	}
 
-	tx.WriteResponseBody()
 	interruption, err := tx.ProcessResponseBody()
 	if err != nil {
 		return nil, err
 	}
 
 	if interruption != nil {
-		return s.processInterruption(it, hit), nil
+		return s.generateResponse(interruption), nil
 	}
+
+	return s.generateResponse(nil), nil
 }

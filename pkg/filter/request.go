@@ -6,6 +6,7 @@ import (
 	"net/netip"
 
 	pb "github.com/rikatz/coraza-grpc/apis/nginx"
+	"go.uber.org/zap"
 )
 
 func (s *GRPCHandler) handleRequest(ctx context.Context, id string, version string, headers map[string]string, body []byte, request *pb.Request) (*pb.Decision, error) {
@@ -14,6 +15,7 @@ func (s *GRPCHandler) handleRequest(ctx context.Context, id string, version stri
 	}
 
 	tx := s.WAF.NewTransactionWithID(id)
+	s.Logger.Info("received request", zap.String("id", id))
 
 	srcIP, err := netip.ParseAddr(request.GetSrcip())
 	if err != nil {
@@ -50,7 +52,7 @@ func (s *GRPCHandler) handleRequest(ctx context.Context, id string, version stri
 			return nil, err
 		}
 		if interruption != nil {
-			return s.processInterruption(interruption)
+			return s.generateResponse(interruption), nil
 		}
 	}
 
@@ -58,7 +60,7 @@ func (s *GRPCHandler) handleRequest(ctx context.Context, id string, version stri
 	tx.ProcessURI(path+"?"+query, request.GetMethod(), "HTTP/"+version)
 
 	if interruption := tx.ProcessRequestHeaders(); interruption != nil {
-		return s.processInterruption(it, hit), nil
+		return s.generateResponse(interruption), nil
 	}
 
 	it, err := tx.ProcessRequestBody()
@@ -66,7 +68,7 @@ func (s *GRPCHandler) handleRequest(ctx context.Context, id string, version stri
 		return nil, err
 	}
 	if it != nil {
-		return s.processInterruption(it, hit), nil
+		return s.generateResponse(it), nil
 	}
-
+	return s.generateResponse(nil), nil
 }

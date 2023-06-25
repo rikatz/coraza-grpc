@@ -31,6 +31,9 @@ var (
 	ProtocGenGoGRPC        = lookupEnv("PROTOC_GENGO_GRPC", getGoBin()+"/protoc-gen-go-grpc")
 	ProtocGenGoGRPCPath    = "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
 	ProtocGenGoGRPCVersion = lookupEnv("PROTOC_GENGO_GRPC_VERSION", "v1.2")
+
+	CorazaConfig    = "https://raw.githubusercontent.com/corazawaf/coraza/v3/dev/coraza.conf-recommended"
+	CoreRuleSetRepo = "https://github.com/coreruleset/coreruleset"
 )
 
 func installPackage(path string, version string, binary string) error {

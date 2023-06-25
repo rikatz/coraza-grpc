@@ -12,8 +12,7 @@ Coraza decision points.
 The Nginx Rust module will be developed simply to consume this program via gRPC and take decisions based on 
 the return of this module
 
-## What's the architectural idea
-
+## What's the idea
 
 ```mermaid
 flowchart LR

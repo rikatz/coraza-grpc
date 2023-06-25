@@ -17,10 +17,20 @@ func (Go) Test() error {
 }
 
 // Build builds the program
-func (Go) Build() error {
+func (Go) Build() {
+	mg.Deps(Go{}.BuildServer, Go{}.BuildClient)
+}
+
+func (Go) BuildClient() error {
 	mg.Deps(Go{}.Tidy)
-	fmt.Println("Building command")
-	return sh.RunV("go", "build", "-o", "build/coraza-grpc", "cmd/main.go")
+	fmt.Println("Building client")
+	return sh.RunV("go", "build", "-o", "build/coraza-client", "cmd/client/main.go")
+}
+
+func (Go) BuildServer() error {
+	mg.Deps(Go{}.Tidy)
+	fmt.Println("Building server")
+	return sh.RunV("go", "build", "-o", "build/coraza-grpc", "cmd/server/main.go")
 }
 
 // Tidy tidies the go package

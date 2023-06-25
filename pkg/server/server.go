@@ -6,9 +6,9 @@ import (
 	"net"
 
 	"go.uber.org/zap"
+
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
-	"gorm.io/gorm/logger"
 
 	"github.com/corazawaf/coraza/v3"
 	"github.com/corazawaf/coraza/v3/types"
@@ -22,23 +22,43 @@ type FilterServer struct {
 	server *grpc.Server
 	port   int
 	waf    coraza.WAF
+	logger *zap.Logger
 }
 
-func NewServerWithOpts(port int, opts ...grpc.ServerOption) (*FilterServer, error) {
-	conf := coraza.NewWAFConfig().
-		WithDirectives(cfg.Directives).
-		WithErrorCallback(logError(logger))
+type ServerConfig struct {
+	Port       int
+	Logger     *zap.Logger
+	Opts       []grpc.ServerOption
+	ConfigPath string
+}
 
-	waf, err := coraza.NewWAF(conf)
+func NewServerWithOpts(cfg *ServerConfig) (*FilterServer, error) {
+	var err error
+	if cfg.Logger == nil {
+		cfg.Logger, err = zap.NewDevelopmentConfig().Build()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	// TODO: Accept the directives from file as multi slice string
+	wafcfg := coraza.NewWAFConfig().
+		WithDirectivesFromFile(cfg.ConfigPath + "/coraza.conf").
+		WithDirectivesFromFile(cfg.ConfigPath + "/coreruleset/crs-setup.conf.example").
+		WithDirectivesFromFile(cfg.ConfigPath + "/coreruleset/rules/*.conf").
+		WithErrorCallback(logError(cfg.Logger))
+
+	waf, err := coraza.NewWAF(wafcfg)
 	if err != nil {
-		logger.Error("unable to create waf instance", zap.Error(err))
+		cfg.Logger.Error("unable to create waf instance", zap.Error(err))
 		return nil, err
 	}
 
 	server := &FilterServer{
-		server: grpc.NewServer(opts...),
+		server: grpc.NewServer(cfg.Opts...),
 		waf:    waf,
-		port:   port,
+		port:   cfg.Port,
+		logger: cfg.Logger,
 	}
 
 	return server, nil
@@ -50,8 +70,10 @@ func (s *FilterServer) Start() error {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
+	s.logger.Info("starting gRPC Server", zap.Int("port", s.port))
 	handler := &filter.GRPCHandler{
-		WAF: s.waf,
+		WAF:    s.waf,
+		Logger: *s.logger,
 	}
 
 	healthcheck := health.NewServer()
