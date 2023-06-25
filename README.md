@@ -14,10 +14,20 @@ the return of this module
 
 ## What's the architectural idea
 
-_________       __________________      ________________
-| NGINX  |  ->  | mod_authz_grpc |  ->  | gRPC backend |
-|  C++   |  ->  |  ngx-rust      |  ->  | any lang     |
---------------------------------------------------------
+
+```mermaid
+flowchart LR
+  NGINX["`NGINX
+  C++`"]
+
+  mod["`mod_authz_grpc
+  ngx-rust`"]
+
+  bck["`gRPC Backend
+  Any Language`"]
+
+  NGINX --> mod --> bck
+```
 
 ## Why create a new backend?
 We need to replace mod_security on ingress nginx. While some other solutions can be used (and we love them),
